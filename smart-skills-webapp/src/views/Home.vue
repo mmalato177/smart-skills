@@ -283,6 +283,9 @@ const endDate = ref('')
 const currentPage = ref(1)
 const itemsPerPage = 10
 
+import { useAuthStore } from '@/stores/auth'
+const auth = useAuthStore()
+
 onMounted(async () => {
   try {
     await auth.fetchMe()
