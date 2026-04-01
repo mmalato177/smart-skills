@@ -1,0 +1,15 @@
+# Frontend
+smart-skills-webapp/node_modules
+smart-skills-webapp/dist
+
+# Backend
+smart-skills-backend/target
+
+# Logs
+*.log
+
+# Mac
+.DS_Store
+
+# Env
+.env
