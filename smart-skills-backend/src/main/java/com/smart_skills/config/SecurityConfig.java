@@ -15,21 +15,22 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/error",
-                                "/favicon.ico",
-                                "/logo.png",
-                                "/assets/**",
-                                "/uploads/**",
-                                "/api/auth/login",
-                                "/api/auth/logout",
-                                "/api/auth/me",
-                                "/api/enums/**"
-                        ).permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll()
+                .requestMatchers(
+                        "/",
+                        "/index.html",
+                        "/error",
+                        "/favicon.ico",
+                        "/logo.png",
+                        "/assets/**",
+                        "/uploads/**",
+                        "/api/auth/login",
+                        "/api/auth/logout",
+                        "/api/auth/me",
+                        "/api/auth/profile-image",
+                        "/api/enums/**"
+                ).permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
                 )
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable());

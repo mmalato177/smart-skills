@@ -285,32 +285,43 @@ const itemsPerPage = 10
 
 onMounted(async () => {
   try {
-    const [moldesData, companiesData, statusesData] = await Promise.all([
-      getMoldes(),
-      getCompany(),
-      getStatus()
+    await auth.fetchMe()
+
+    const [companiesData, statusesData] = await Promise.all([
+      getCompany().catch(() => []),
+      getStatus().catch(() => [])
     ])
 
-    moldes.value = moldesData || []
-    companies.value = companiesData || []
-    statuses.value = statusesData || []
+    companies.value = Array.isArray(companiesData) ? companiesData : []
+    statuses.value = Array.isArray(statusesData) ? statusesData : []
+
+    if (auth.isAuthenticated) {
+      const moldesData = await getMoldes().catch(() => [])
+      moldes.value = Array.isArray(moldesData) ? moldesData : []
+    } else {
+      moldes.value = []
+    }
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
+    moldes.value = []
+    companies.value = []
+    statuses.value = []
   } finally {
     loading.value = false
   }
 })
 
 const companyTabs = computed(() => {
-  return ['Todos', ...companies.value]
+  const list = Array.isArray(companies.value) ? companies.value : []
+  return ['Todos', ...list]
 })
 
 const statusOptions = computed(() => {
-  return statuses.value || []
+  return Array.isArray(statuses.value) ? statuses.value : []
 })
 
 const filteredMoldes = computed(() => {
-  let result = [...moldes.value]
+  let result = Array.isArray(moldes.value) ? [...moldes.value] : []
 
   if (selectedCompany.value !== 'Todos') {
     result = result.filter((m) => m.company === selectedCompany.value)
@@ -398,8 +409,10 @@ const goToPage = (page) => {
 }
 
 const getCompanyCount = (company) => {
-  if (company === 'Todos') return moldes.value.length
-  return moldes.value.filter((m) => m.company === company).length
+  const list = Array.isArray(moldes.value) ? moldes.value : []
+
+  if (company === 'Todos') return list.length
+  return list.filter((m) => m.company === company).length
 }
 
 const clearFilters = () => {
@@ -411,15 +424,19 @@ const clearFilters = () => {
 }
 
 const handleAddMolde = (molde) => {
+  if (!Array.isArray(moldes.value)) {
+    moldes.value = []
+  }
+
   moldes.value.push(molde)
   isFormOpen.value = false
 }
 
 const handleEditMolde = (molde) => {
-  if (!editingMolde.value) return
+  if (!editingMolde.value || !Array.isArray(moldes.value)) return
 
   const index = moldes.value.findIndex(
-      (m) => m.wkzBauerNr === editingMolde.value.wkzBauerNr
+    (m) => m.wkzBauerNr === editingMolde.value.wkzBauerNr
   )
 
   if (index !== -1) {
@@ -436,7 +453,8 @@ const handleEditMolde = (molde) => {
 
 const handleDeleteMolde = (wkzBauerNr) => {
   if (confirm('Tem certeza que deseja remover este molde?')) {
-    moldes.value = moldes.value.filter((m) => m.wkzBauerNr !== wkzBauerNr)
+    const list = Array.isArray(moldes.value) ? moldes.value : []
+    moldes.value = list.filter((m) => m.wkzBauerNr !== wkzBauerNr)
   }
 }
 
@@ -492,9 +510,11 @@ const getStatusClass = (status) => {
 const handleUploadSuccess = async () => {
   try {
     loading.value = true
-    moldes.value = await getMoldes()
+    const data = await getMoldes()
+    moldes.value = Array.isArray(data) ? data : []
   } catch (error) {
     console.error('Erro ao recarregar moldes após upload:', error)
+    moldes.value = []
   } finally {
     loading.value = false
     isUploadModalOpen.value = false

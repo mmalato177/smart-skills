@@ -56,11 +56,10 @@ export const useAuthStore = defineStore('auth', {
             })
 
             this.user = null
+            this.initialized = true
         },
 
         async uploadProfileImage(file) {
-            let errorMessage = ''
-
             try {
                 const formData = new FormData()
                 formData.append('image', file)
@@ -73,17 +72,18 @@ export const useAuthStore = defineStore('auth', {
 
                 if (!res.ok) {
                     const error = await res.json().catch(() => null)
-                    errorMessage = error?.message
-                    throw new Error( errorMessage || 'Erro ao fazer upload da imagem')
+
+                    let errorMessage = error?.message || 'Erro ao fazer upload da imagem'
+
                     if (res.status === 413) {
                         errorMessage = 'A imagem é demasiado grande.'
                     }
+
+                    throw new Error(errorMessage)
                 }
 
                 return await res.json()
-
             } catch (error) {
-
                 console.error('Erro upload imagem:', error)
                 throw error
             }

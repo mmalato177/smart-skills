@@ -1,7 +1,14 @@
 
 export async function getMoldes() {
-    const response = await fetch('/api/moldes')
-    return await response.json()
+  const response = await fetch('/api/moldes', {
+    credentials: 'include'
+  })
+
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar moldes: ${response.status}`)
+  }
+
+  return await response.json()
 }
 
 export async function uploadMoldes(filesWithCompany) {
@@ -18,6 +25,7 @@ export async function uploadMoldes(filesWithCompany) {
 
     const response = await fetch('/api/moldes/upload', {
         method: 'POST',
+        credentials: 'include',
         body: formData
     })
 
@@ -29,17 +37,39 @@ export async function uploadMoldes(filesWithCompany) {
 
     return await response.json()
 }
+
 export async function getMoldeByWKZ(wkz) {
-    const response = await fetch(`/api/moldes/${wkz}`)
+    const response = await fetch(`/api/moldes/${wkz}`, {
+        credentials: 'include'
+    })
+    if (!response.ok) {
+        throw new Error(`Erro ao buscar molde: ${response.status}`)
+    }
+
     return await response.json()
+}
+
+
+export async function getCompany() {
+  const response = await fetch('/api/enums/company', {
+    credentials: 'include'
+  })
+
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar companies: ${response.status}`)
+  }
+
+  return await response.json()
 }
 
 export async function getStatus() {
-    const response = await fetch('/api/enums/status')
-    return await response.json()
-}
+  const response = await fetch('/api/enums/status', {
+    credentials: 'include'
+  })
 
-export async function getCompany() {
-    const response = await fetch('/api/enums/company')
-    return await response.json()
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar status: ${response.status}`)
+  }
+
+  return await response.json()
 }
