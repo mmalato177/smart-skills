@@ -1,21 +1,36 @@
 package com.smart_skills.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class CorsConfig implements WebMvcConfigurer {
+public class SecurityConfig {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(
-                        "http://localhost:5173",
-                        "https://smart-skills.up.railway.app"
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                        "/",
+                        "/index.html",
+                        "/error",
+                        "/favicon.ico",
+                        "/logo.png",
+                        "/assets/**",
+                        "/uploads/**",
+                        "/api/auth/login",
+                        "/api/auth/logout",
+                        "/api/auth/me",
+                        "/api/enums/**"
+                ).permitAll()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
+                .formLogin(form -> form.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
+        return http.build();
     }
 }
