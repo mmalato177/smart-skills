@@ -1,17 +1,5 @@
 package com.smart_skills.controllers;
 
-import com.smart_skills.dto.ChangePassword;
-import com.smart_skills.dto.LoginDTO;
-import com.smart_skills.models.User;
-import com.smart_skills.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +10,30 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.smart_skills.dto.ChangePassword;
+import com.smart_skills.dto.LoginDTO;
+import com.smart_skills.models.User;
+import com.smart_skills.repository.UserRepository;
+
+import jakarta.servlet.http.HttpSession;
+
 @RestController
 @RequestMapping("/api/auth")
 public class UserController {
@@ -29,7 +41,6 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Path uploadDir = Paths.get("uploads/profile");
-
 
     public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -52,13 +63,26 @@ public class UserController {
                     .body(Map.of("message", "Utilizador inativo"));
         }
 
-        // temporário: comparação direta
-        // depois trocamos para BCrypt
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Credenciais inválidas"));
         }
 
+        // CRUCIAL — autenticar no Spring Security
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                user.getUsername(),
+                null,
+                java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        session.setAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+                SecurityContextHolder.getContext()
+        );
+
+        // os teus atributos (opcional)
         session.setAttribute("userId", user.getId());
         session.setAttribute("username", user.getUsername());
         session.setAttribute("role", user.getRole());
@@ -106,7 +130,6 @@ public class UserController {
     public ResponseEntity<?> uploadProfileImage(@RequestParam("image") MultipartFile image, HttpSession session) {
         Object userIdObj = session.getAttribute("userId");
 
-
         if (userIdObj == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Não autenticado"));
@@ -118,10 +141,10 @@ public class UserController {
         }
 
         String contentType = image.getContentType();
-        if (contentType == null ||
-                (!contentType.equals("image/jpeg")
-                        && !contentType.equals("image/png")
-                        && !contentType.equals("image/webp"))) {
+        if (contentType == null
+                || (!contentType.equals("image/jpeg")
+                && !contentType.equals("image/png")
+                && !contentType.equals("image/webp"))) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Formato inválido. Usa JPG, PNG ou WEBP."));
         }
@@ -173,7 +196,7 @@ public class UserController {
     }
 
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePassword request,HttpSession session) {
+    public ResponseEntity<?> changePassword(@RequestBody ChangePassword request, HttpSession session) {
         Object userIdObj = session.getAttribute("userId");
 
         if (userIdObj == null) {
