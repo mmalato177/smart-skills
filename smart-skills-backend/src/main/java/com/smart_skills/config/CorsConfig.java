@@ -13,10 +13,11 @@ import org.springframework.web.servlet.config.annotation.*;
             registry.addMapping("/api/**")
                     .allowedOrigins(
                             "http://localhost:5173",
-                            "https://o-teu-app.onrender.com"
+                            "https://smart-skills.up.railway.app"
                     )
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                    .allowedHeaders("*");
+                    .allowedHeaders("*")
+                    .allowCredentials(true);
         }
     }
 
