@@ -19,10 +19,6 @@ export async function uploadMoldes(filesWithCompany) {
         formData.append('companies', item.company)
     })
 
-    for (const [key, value] of formData.entries()) {
-        console.log(key, value)
-    }
-
     const response = await fetch('/api/moldes/upload', {
         method: 'POST',
         credentials: 'include',
