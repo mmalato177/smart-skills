@@ -262,7 +262,7 @@ import {computed, onMounted, ref, watch} from 'vue'
 import {Package, Pencil, Search, Trash2, Upload, X} from 'lucide-vue-next'
 import MoldeForm from '../components/MoldeForm.vue'
 import UploadMoldesModal from '../components/UploadMoldesModal.vue'
-import {getCompany, getMoldes, getStatus} from '../services/moldeService.js'
+import {getCompany, getMoldes, getStatus} from '../services/MoldeService.js'
 import Navbar from '@/components/Navbar.vue'
 
 const moldes = ref([])

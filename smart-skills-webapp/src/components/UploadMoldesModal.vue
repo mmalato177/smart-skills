@@ -103,7 +103,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { X, UploadCloud, FileSpreadsheet } from 'lucide-vue-next'
-import { uploadMoldes } from '../services/moldeService.js'
+import { uploadMoldes } from '../services/MoldeService.js'
 import { useToast } from '../composables/useToast'
 
 defineProps({

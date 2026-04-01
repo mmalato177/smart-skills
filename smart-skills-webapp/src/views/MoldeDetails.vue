@@ -177,7 +177,7 @@ import {
   ShieldCheck,
   CalendarCheck
 } from 'lucide-vue-next'
-import { getMoldeByWKZ } from '../services/moldeService'
+import { getMoldeByWKZ } from '../services/MoldeService'
 import Navbar from '@/components/Navbar.vue'
 
 const route = useRoute()
